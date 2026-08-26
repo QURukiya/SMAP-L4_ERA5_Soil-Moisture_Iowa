@@ -300,8 +300,17 @@ Example forecast:
 The statewide monthly and pixel-wise models are separate experiments and their metrics should not be directly compared as if they represent the same evaluation design.
 
 ---
+## Key Findings
 
-# Selected visual results
+- SMAP and ERA5-Land showed strong statewide monthly correspondence, with **r = 0.886**.
+- ERA5-Land showed an overall positive bias relative to SMAP of approximately **+0.048 m³/m³**.
+- SMAP exhibited longer mean soil-moisture memory (**2.87 months**) than ERA5-Land (**1.59 months**).
+- K-means analysis identified **two hydroclimate regimes** as the best-supported clustering solution.
+- For statewide one-month-ahead prediction, the **SMAP-only Random Forest** achieved the highest test performance (**R² = 0.180**).
+- The separate combined pixel-wise Random Forest achieved **R² = 0.433**, demonstrating spatially resolved predictive skill for next-month SMAP anomalies.
+- Differences between SMAP and ERA5-Land varied across seasons, drought conditions, persistence characteristics, and atmospheric conditions.
+
+# Visual results
 
 ## Pixel-wise mean bias
 
