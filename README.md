@@ -309,7 +309,7 @@ The statewide monthly and pixel-wise models are separate experiments and their m
   <img src="Pixel-wise Mean Bias.png" width="82%">
 </p>
 
-**Figure 2 — Pixel-wise Mean Bias (ERA5-Land − SMAP).**
+**Figure: Pixel-wise Mean Bias (ERA5-Land − SMAP).**
 
 ---
 
@@ -319,7 +319,7 @@ The statewide monthly and pixel-wise models are separate experiments and their m
   <img src="Seasonal and Growing-Season ERA5-Land − SMAP Bias.png" width="92%">
 </p>
 
-**Figure 16 — Seasonal and Growing-Season ERA5-Land − SMAP Bias.**
+**Figure: Seasonal and Growing-Season ERA5-Land − SMAP Bias.**
 
 ---
 
@@ -329,7 +329,7 @@ The statewide monthly and pixel-wise models are separate experiments and their m
   <img src="SMAP–ERA5-Land Drought Detection and Agreement Diagnostics.png" width="92%">
 </p>
 
-**Figure 27 — SMAP–ERA5-Land Drought Detection and Agreement Diagnostics.**
+**Figure: SMAP–ERA5-Land Drought Detection and Agreement Diagnostics.**
 
 ---
 
@@ -339,7 +339,7 @@ The statewide monthly and pixel-wise models are separate experiments and their m
   <img src="K-Means Hydroclimate Regime Selection Diagnostics.png" width="82%">
 </p>
 
-**Figure 44 — K-Means Hydroclimate Regime Selection Diagnostics.**
+**Figure: K-Means Hydroclimate Regime Selection Diagnostics.**
 
 The executed notebook tested `k = 2–7` and selected **k = 2** based on the maximum silhouette score.
 
@@ -351,7 +351,7 @@ The executed notebook tested `k = 2–7` and selected **k = 2** based on the max
   <img src="Random Forest One-Month Forecast Performance Comparison.png" width="92%">
 </p>
 
-**Figure 49 — Random Forest One-Month Forecast Performance Comparison.**
+**Figure: Random Forest One-Month Forecast Performance Comparison.**
 
 The executed monthly model results identify **SMAP-only** as the configuration with the highest test R².
 
@@ -363,7 +363,7 @@ The executed monthly model results identify **SMAP-only** as the configuration w
   <img src="Combined ERA5-Land + SMAP Prediction.png" width="82%">
 </p>
 
-**Figure 56 — Combined ERA5-Land + SMAP Prediction of Next-Month SMAP Anomaly.**
+**Figure: Combined ERA5-Land + SMAP Prediction of Next-Month SMAP Anomaly.**
 
 ---
 
