@@ -1,141 +1,119 @@
 # SMAP-L4 & ERA5-Land Soil Moisture Analysis Across Iowa
 
-### Pixel-wise comparison, drought diagnostics, soil-moisture persistence, hydroclimate regimes, and next-month predictability
+### Satellite–reanalysis comparison, drought diagnostics, persistence, hydroclimate regimes, and next-month soil-moisture prediction
 
-![Status](https://img.shields.io/badge/status-analysis%20complete-brightgreen)
-![SMAP](https://img.shields.io/badge/data-SMAP%20L4-blue)
-![ERA5-Land](https://img.shields.io/badge/data-ERA5--Land-0b7285)
-![Period](https://img.shields.io/badge/period-2020--2025-orange)
-![Model](https://img.shields.io/badge/ML-Random%20Forest-purple)
-![License](https://img.shields.io/badge/license-MIT-lightgrey)
+![Python](https://img.shields.io/badge/Python-3.x-blue)
+![SMAP](https://img.shields.io/badge/NASA-SMAP%20L4-1f77b4)
+![ERA5-Land](https://img.shields.io/badge/ECMWF-ERA5--Land-008080)
+![Machine Learning](https://img.shields.io/badge/ML-Random%20Forest-green)
+![License](https://img.shields.io/badge/License-MIT-lightgrey)
 
-A reproducible remote-sensing and reanalysis workflow for evaluating how **NASA SMAP Level-4** and **ERA5-Land** represent surface soil-moisture variability across Iowa, with additional analyses of drought behavior, temporal persistence, hydroclimate regimes, and one-month-ahead soil-moisture predictability.
+This repository presents a reproducible geospatial analysis of **NASA SMAP Level-4** and **ERA5-Land** surface soil moisture across Iowa. The workflow evaluates agreement between the two products, their representation of soil-moisture drought and persistence, spatial hydroclimate regimes, and the predictability of next-month SMAP anomalies using Random Forest models.
 
 ---
 
-## Graphical workflow
+## Workflow
 
 <p align="center">
-  <img src="workflow_verified.png" width="100%">
+  <img src="Workflow.png" width="100%">
 </p>
 
 ---
 
-## Overview
+## Research scope
 
-This repository contains the analysis workflow and selected outputs from a statewide comparison of **SMAP Level-4 surface soil moisture** and **ERA5-Land surface-layer soil moisture** across Iowa.
+The analysis focuses on four questions:
 
-The analysis is designed to answer several related questions:
+1. How closely do SMAP L4 and ERA5-Land represent the same monthly surface soil-moisture variability?
+2. How do their differences change spatially, seasonally, and during soil-moisture drought?
+3. How do the products differ in soil-moisture memory and persistence?
+4. Can current soil-moisture and atmospheric conditions predict **next-month SMAP surface soil-moisture anomaly**?
 
-- How closely do SMAP and ERA5-Land agree spatially and temporally?
-- How much of their disagreement is associated with systematic bias versus random variability?
-- Does their agreement change by season and during the May–September growing season?
-- How consistently do the two products identify soil-moisture drought?
-- How persistent are soil-moisture anomalies in each dataset?
-- Are there spatially distinct hydroclimate regimes of dataset agreement?
-- How predictable is next-month SMAP soil-moisture anomaly using SMAP, ERA5-Land, or combined predictors?
+The comparison is performed at both the **Iowa-wide monthly scale** and the **individual-pixel scale**.
 
-The workflow uses both **statewide domain-average** and **pixel-wise** analyses rather than relying on a single summary statistic.
-
-> **Important:** This is a SMAP–ERA5-Land intercomparison. No independent in-situ soil-moisture dataset is used as ground truth, so differences should be interpreted as **dataset disagreement**, not strictly as ERA5-Land error relative to truth.
+> **Important:** No independent in-situ soil-moisture network is used as ground truth in this analysis. SMAP–ERA5 differences are therefore interpreted as **dataset disagreement**, not strictly as observational error.
 
 ---
 
-## Project status
+## Data
 
-| Component | Status |
+### SMAP Level-4
+
+- Product: **SPL4SMGP v008**
+- Variable: surface soil moisture
+- Approximate depth: **0–5 cm**
+- Approximate spatial resolution: **9 km**
+- Source data: **3-hourly granules**
+- Analysis frequency: monthly
+
+### ERA5-Land
+
+- Soil-moisture variable: **`swvl1`**
+- Approximate depth: **0–7 cm**
+- Source frequency: daily
+- Analysis frequency: monthly
+
+ERA5-Land atmospheric variables used in the analysis include:
+
+- precipitation
+- 2-m air temperature
+- vapor pressure deficit (VPD)
+- net radiation
+- wind speed
+
+### Analysis domain
+
+| Property | Value |
 |---|---|
-| SMAP monthly processing | Complete |
-| ERA5-Land monthly processing | Complete |
-| Spatial harmonization and Iowa clipping | Complete |
-| Domain-average statistical comparison | Complete |
-| Pixel-wise agreement analysis | Complete |
-| Trend and change-point analysis | Complete |
-| Seasonal and growing-season analysis | Complete |
-| Soil-moisture drought diagnostics | Complete |
-| Atmospheric-control analysis | Complete |
-| Soil-moisture memory and persistence | Complete |
-| Hydroclimate regime classification | Complete |
-| Random Forest predictability analysis | Complete |
+| Study area | Iowa, USA |
+| Study period represented in pixel-wise arrays | 2020–2025 |
+| Monthly pixel-wise time steps | 72 |
+| Valid Iowa pixels | **1,807** |
+| Common months in statewide SMAP–ERA5 comparison | **71** |
+
+ERA5-Land was interpolated to the SMAP pixel locations, and only pixels inside the Iowa boundary were retained.
 
 ---
 
-## Study design
+## Analysis pipeline
 
-| Element | Specification |
-|---|---|
-| **Study area** | Iowa, USA |
-| **Study period** | 2020–2025 |
-| **Pixel-wise time steps** | 72 monthly time steps |
-| **Domain comparison** | 71 common monthly observations |
-| **Valid pixels** | 1,807 |
-| **SMAP product** | SPL4SMGP v008 |
-| **SMAP variable** | Surface soil moisture, approximately 0–5 cm |
-| **SMAP processing** | 3-hourly granules aggregated to monthly means |
-| **ERA5-Land variable** | `swvl1`, approximately 0–7 cm |
-| **ERA5-Land processing** | Daily data aggregated to monthly values |
-| **Target grid** | SMAP pixel locations |
-| **Drought threshold** | Standardized soil-moisture anomaly `z ≤ −1` |
-| **Forecast target** | Next-month SMAP surface soil-moisture anomaly |
-| **Machine-learning model** | Random Forest regression |
+### 1 — SMAP–ERA5 agreement
 
----
-
-## Analytical workflow
-
-### 1. Spatial and statistical comparison
-
-SMAP and ERA5-Land were harmonized to a common spatial framework, clipped to the Iowa boundary, and compared at both statewide and individual-pixel scales.
-
-Performance statistics include:
+Agreement was evaluated using:
 
 - Pearson correlation coefficient (`r`)
-- Mean bias
+- mean bias
 - RMSE
 - unbiased RMSE (`ubRMSE`)
 - Kling–Gupta Efficiency (`KGE`)
-- Moran's I for spatial autocorrelation of the bias field
 
-For the statewide raw monthly comparison:
+The pixel-wise ERA5−SMAP bias field was additionally evaluated using **Moran's I** to test for spatial autocorrelation.
 
-| Metric | Value |
-|---|---:|
-| Pearson `r` | 0.8861 |
-| Bias | +0.0481 m³/m³ |
-| RMSE | 0.0535 m³/m³ |
-| ubRMSE | 0.0236 m³/m³ |
-| KGE | 0.7716 |
+### 2 — Trend and change-point diagnostics
 
----
-
-### 2. Trend and change-point analysis
-
-Temporal behavior was examined independently for SMAP and ERA5-Land using:
+Temporal behavior was examined using:
 
 - Mann–Kendall trend test
 - Sen's slope
 - Pettitt change-point test
-- Spatial comparison of trend direction and change-point timing
 
----
+These analyses were applied independently to the SMAP and ERA5-Land monthly records.
 
-### 3. Seasonal and growing-season analysis
+### 3 — Seasonal comparison
 
-Agreement statistics were recomputed for:
+Metrics were evaluated separately for:
 
-- DJF — winter
-- MAM — spring
-- JJA — summer
-- SON — autumn
-- May–September agricultural growing season
+- DJF
+- MAM
+- JJA
+- SON
+- **May–September growing season**
 
-This allows dataset disagreement to be evaluated separately from the strong annual soil-moisture cycle.
+This separates seasonal behavior from the annual soil-moisture cycle.
 
----
+### 4 — Soil-moisture drought
 
-### 4. Soil-moisture drought diagnostics
-
-Monthly standardized anomalies were calculated independently for each calendar month.
+Monthly anomalies were standardized by calendar month.
 
 A drought month is defined as:
 
@@ -143,117 +121,153 @@ A drought month is defined as:
 z \leq -1
 \]
 
-Consecutive drought months were grouped into events.
+Consecutive drought months were grouped into individual events.
 
-Calculated diagnostics include:
+The drought analysis calculates:
 
-- number of drought events
-- number of drought months
+- drought-event frequency
+- total drought months
 - mean and maximum event duration
 - mean and maximum severity
 - SMAP–ERA5 drought agreement
 - probability of detection (`POD`)
 - false alarm ratio (`FAR`)
 
----
+### 5 — Atmospheric controls
 
-### 5. Atmospheric controls of dataset disagreement
-
-The signed monthly bias,
+The signed soil-moisture difference
 
 \[
-\mathrm{Bias} = \mathrm{ERA5-Land} - \mathrm{SMAP},
+\mathrm{Bias} = \mathrm{ERA5-Land} - \mathrm{SMAP}
 \]
 
-was evaluated against ERA5-Land atmospheric variables:
+was related separately to:
 
 - precipitation
-- 2-m air temperature
-- vapor pressure deficit (`VPD`)
+- temperature
+- VPD
 - net radiation
 - wind speed
 
-The notebook computes driver-specific correlations/regressions and contrasts high- and low-disagreement periods.
+The workflow evaluates per-driver relationships and contrasts periods of relatively high and low disagreement.
 
----
+### 6 — Soil-moisture memory
 
-### 6. Soil-moisture memory and persistence
+Monthly standardized anomalies were analyzed using lagged autocorrelation.
 
-Temporal persistence was quantified from the autocorrelation function (`ACF`) of standardized monthly soil-moisture anomalies.
-
-Memory timescale was defined as the first lag where:
+The memory timescale is defined as the first lag at which:
 
 \[
 ACF \leq \frac{1}{e}
 \]
 
-Executed notebook results:
+Drought persistence was also calculated as:
 
-| Dataset | Mean memory |
-|---|---:|
-| SMAP L4 | 2.870 months |
-| ERA5-Land | 1.592 months |
-| ERA5 − SMAP | −1.278 months |
+\[
+P(D_{t+1}\mid D_t)
+\]
 
-Mean lag-1 autocorrelation was approximately:
+where \(D_t\) indicates drought at month \(t\).
 
-- **SMAP:** 0.630
-- **ERA5-Land:** 0.382
+### 7 — Hydroclimate regimes
 
-Drought persistence was also calculated as the conditional probability that a drought month is followed by another drought month.
+K-means clustering was applied using **17 diagnostic features**:
 
----
+1. bias  
+2. RMSE  
+3. ubRMSE  
+4. KGE  
+5. Pearson `r`  
+6. drought-event-frequency difference  
+7. drought detection agreement  
+8. probability of detection  
+9. false alarm ratio  
+10. drought-severity difference  
+11. soil-moisture-memory difference  
+12. drought-persistence difference  
+13. bias–precipitation correlation  
+14. bias–VPD correlation  
+15. bias–temperature correlation  
+16. bias–radiation correlation  
+17. bias–wind correlation  
 
-### 7. Hydroclimate regime classification
-
-K-means clustering integrated **17 diagnostic features** derived from the preceding analyses:
-
-1. bias
-2. RMSE
-3. ubRMSE
-4. KGE
-5. Pearson `r`
-6. ERA5−SMAP drought-event-frequency difference
-7. drought detection agreement
-8. probability of detection
-9. false alarm ratio
-10. drought-severity difference
-11. soil-moisture-memory difference
-12. drought-persistence difference
-13. bias–precipitation correlation
-14. bias–VPD correlation
-15. bias–temperature correlation
-16. bias–radiation correlation
-17. bias–wind correlation
-
-Candidate solutions from **k = 2 to 7** were evaluated.
+Candidate solutions from **k = 2 through k = 7** were tested.
 
 The executed notebook selected:
 
-- **Best k = 2**
-- **Silhouette score = 0.203**
-- **Regime 1:** 777 pixels
-- **Regime 2:** 1,030 pixels
+**k = 2**
 
-Regime names are intentionally kept neutral because the notebook's automatic semantic-labeling step assigned the same descriptive label to both clusters.
+with a silhouette score of:
+
+**0.203**
+
+Pixel counts were:
+
+- **Regime 1:** 777
+- **Regime 2:** 1,030
+
+### 8 — Random Forest forecasting
+
+The prediction target is:
+
+> **Next-month SMAP surface soil-moisture anomaly**
+
+Three statewide monthly Random Forest configurations were evaluated:
+
+- ERA5-only
+- SMAP-only
+- Combined ERA5 + SMAP
+
+A separate **combined pixel-wise Random Forest** analysis was also performed.
 
 ---
 
-## Random Forest predictability analysis
+# Verified numerical results
 
-The forecast target is **next-month SMAP surface soil-moisture anomaly**.
+## Statewide SMAP–ERA5 comparison
 
-Three statewide monthly predictor configurations were evaluated:
+| Metric | Raw monthly comparison |
+|---|---:|
+| Pearson `r` | **0.8861** |
+| Bias | **+0.0481 m³/m³** |
+| RMSE | **0.0535 m³/m³** |
+| ubRMSE | **0.0236 m³/m³** |
+| KGE | **0.7716** |
 
-1. ERA5-only
-2. SMAP-only
-3. Combined ERA5 + SMAP
+For monthly standardized anomalies:
 
-Predictors include current and lagged anomalies, rolling means, seasonal encoding, and atmospheric variables where applicable.
+| Metric | Value |
+|---|---:|
+| Pearson `r` | 0.8454 |
+| Bias | 0.0000 |
+| RMSE | 0.0147 |
+| ubRMSE | 0.0147 |
+| KGE | −0.0121 |
 
-### Statewide monthly RF results
+---
 
-The modeling table contains **68 monthly samples** spanning March 2020 through November 2025, with **58 training samples and 10 testing samples**.
+## Soil-moisture memory
+
+| Quantity | Mean |
+|---|---:|
+| SMAP memory | **2.870 months** |
+| ERA5-Land memory | **1.592 months** |
+| ERA5 − SMAP memory | **−1.278 months** |
+| SMAP lag-1 ACF | **0.630** |
+| ERA5 lag-1 ACF | **0.382** |
+
+In the executed notebook, **SMAP shows the longer mean monthly memory timescale**.
+
+---
+
+## Monthly Random Forest results
+
+The monthly modeling dataset contains:
+
+- **68 total monthly samples**
+- **58 training samples**
+- **10 testing samples**
+- modeling period: **2020-03 to 2025-11**
 
 | Model | R² | RMSE | MAE | Bias |
 |---|---:|---:|---:|---:|
@@ -261,102 +275,160 @@ The modeling table contains **68 monthly samples** spanning March 2020 through N
 | **SMAP-only** | **0.180** | **0.0207** | **0.0180** | −0.0104 |
 | Combined ERA5 + SMAP | −0.040 | 0.0233 | 0.0204 | −0.0122 |
 
-For this statewide monthly experiment, **SMAP-only produced the highest test R²**.
-
-### Combined pixel-wise RF
-
-A separate combined pixel-wise Random Forest experiment used:
-
-- **1,807 pixels**
-- **113,841 total samples**
-- **101,192 training samples**
-- **12,649 testing samples**
-
-Performance:
-
-| Metric | Value |
-|---|---:|
-| R² | **0.433** |
-| RMSE | **0.685 z-units** |
-| Bias | **−0.201** |
-
-The example forecast mapped in the notebook is:
-
-**July 2025 → August 2025**
-
-The statewide monthly and pixel-wise experiments are separate analyses and their performance metrics should not be interpreted interchangeably.
+For this experiment, **SMAP-only produced the highest test R²**.
 
 ---
 
-# Selected figures
+## Combined pixel-wise Random Forest
+
+The separate combined pixel-wise experiment contains:
+
+| Property | Value |
+|---|---:|
+| Pixels | **1,807** |
+| Total samples | **113,841** |
+| Training samples | **101,192** |
+| Testing samples | **12,649** |
+| R² | **0.433** |
+| RMSE | **0.685** |
+| Bias | **−0.201** |
+
+Example forecast:
+
+**July 2025 → August 2025**
+
+The statewide monthly and pixel-wise models are separate experiments and their metrics should not be directly compared as if they represent the same evaluation design.
+
+---
+
+# Selected visual results
 
 ## Pixel-wise mean bias
 
 <p align="center">
-  <img src="fig02_bias.png" width="80%">
+  <img src="Pixel-wise Mean Bias.png" width="82%">
 </p>
 
-**Figure 2.** Pixel-wise mean bias between ERA5-Land and SMAP surface soil moisture.
+**Figure 2 — Pixel-wise Mean Bias (ERA5-Land − SMAP).**
 
 ---
 
-## Seasonal and growing-season bias
+## Seasonal and growing-season comparison
 
 <p align="center">
-  <img src="fig16_seasonal_bias.png" width="90%">
+  <img src="Seasonal and Growing-Season ERA5-Land − SMAP Bias.png" width="92%">
 </p>
 
-**Figure 16.** Seasonal ERA5-Land − SMAP bias for DJF, MAM, JJA, SON, and the May–September growing season.
+**Figure 16 — Seasonal and Growing-Season ERA5-Land − SMAP Bias.**
 
 ---
 
-## Soil-moisture drought diagnostics
+## Drought detection and agreement
 
 <p align="center">
-  <img src="fig27_drought_diagnostics.png" width="90%">
+  <img src="SMAP–ERA5-Land Drought Detection and Agreement Diagnostics.png" width="92%">
 </p>
 
-**Figure 27.** SMAP–ERA5-Land drought diagnostics including drought occurrence, dataset differences, agreement, POD, and FAR.
+**Figure 27 — SMAP–ERA5-Land Drought Detection and Agreement Diagnostics.**
 
 ---
 
 ## Hydroclimate regime selection
 
 <p align="center">
-  <img src="fig44_kmeans_selection.png" width="80%">
+  <img src="K-Means Hydroclimate Regime Selection Diagnostics.png" width="82%">
 </p>
 
-**Figure 44.** K-means cluster-selection diagnostics. The executed notebook evaluates `k = 2–7` and selects **k = 2** using the maximum silhouette score.
+**Figure 44 — K-Means Hydroclimate Regime Selection Diagnostics.**
+
+The executed notebook tested `k = 2–7` and selected **k = 2** based on the maximum silhouette score.
 
 ---
 
-## Statewide monthly Random Forest comparison
+## Monthly Random Forest comparison
 
 <p align="center">
-  <img src="fig49_monthly_rf.png" width="90%">
+  <img src="Random Forest One-Month Forecast Performance Comparison.png" width="92%">
 </p>
 
-**Figure 49.** Comparison of R², RMSE, and MAE for ERA5-only, SMAP-only, and combined monthly Random Forest models. **SMAP-only provides the highest test R² in the executed notebook.**
+**Figure 49 — Random Forest One-Month Forecast Performance Comparison.**
+
+The executed monthly model results identify **SMAP-only** as the configuration with the highest test R².
 
 ---
 
 ## Combined pixel-wise prediction
 
 <p align="center">
-  <img src="fig56_combined_forecast.png" width="80%">
+  <img src="Combined ERA5-Land + SMAP Prediction.png" width="82%">
 </p>
 
-**Figure 56.** Combined ERA5-Land + SMAP Random Forest prediction of next-month SMAP anomaly for August 2025.
+**Figure 56 — Combined ERA5-Land + SMAP Prediction of Next-Month SMAP Anomaly.**
 
 ---
 
-## Repository structure
+# Reproducibility
+
+The repository is organized to allow the analytical workflow to be rerun using equivalent prepared SMAP and ERA5-Land inputs.
+
+### Environment
+
+Main Python packages used in the notebook include:
+
+- NumPy
+- pandas
+- xarray
+- SciPy
+- Matplotlib
+- GeoPandas
+- Cartopy
+- scikit-learn
+- PyMannKendall
+- libpysal
+- esda
+- Shapely
+
+### Clone the repository
+
+```bash
+git clone https://github.com/QURukiya/SMAP-L4_ERA5_Soil-Moisture_Iowa.git
+cd SMAP-L4_ERA5_Soil-Moisture_Iowa
+```
+
+Install the required environment using the provided `requirements.txt` or `environment.yml`.
+
+---
+
+## Data availability
+
+Large SMAP and ERA5-Land datasets are not redistributed directly through this GitHub repository.
+
+The analysis expects prepared data products corresponding to:
+
+```text
+data/
+├── smap_monthly/
+└── era5/
+```
+
+See `data/README.md` for the expected input structure.
+
+The current repository reproduces the scientific analysis from the prepared input datasets. It does **not yet provide the complete raw-download-to-preprocessed-input pipeline**.
+
+---
+
+## Repository contents
 
 ```text
 SMAP-L4_ERA5_Soil-Moisture_Iowa/
 │
 ├── README.md
 ├── LICENSE
+├── requirements.txt
+├── environment.yml
+├── VALIDATION.md
+├── CITATION.cff.template
+│
 ├── notebooks/
 │   └── SEES_3500_SMAP_ERA5_Iowa.ipynb
 │
@@ -368,10 +440,54 @@ SMAP-L4_ERA5_Soil-Moisture_Iowa/
 ├── outputs/
 │   └── README.md
 │
-├── workflow_verified.png
-├── fig02_bias.png
-├── fig16_seasonal_bias.png
-├── fig27_drought_diagnostics.png
-├── fig44_kmeans_selection.png
-├── fig49_monthly_rf.png
-└── fig56_combined_forecast.png
+├── Workflow.png
+├── Pixel-wise Mean Bias.png
+├── Seasonal and Growing-Season ERA5-Land − SMAP Bias.png
+├── SMAP–ERA5-Land Drought Detection and Agreement Diagnostics.png
+├── K-Means Hydroclimate Regime Selection Diagnostics.png
+├── Random Forest One-Month Forecast Performance Comparison.png
+└── Combined ERA5-Land + SMAP Prediction.png
+```
+
+---
+
+## Interpretation limits
+
+This repository should be interpreted with several constraints in mind:
+
+- SMAP and ERA5-Land represent slightly different near-surface soil depths.
+- No independent in-situ validation dataset is included.
+- The available record is relatively short for long-term trend inference.
+- Monthly aggregation does not resolve sub-monthly soil-moisture dynamics.
+- Random Forest forecast skill is evaluated over a limited independent period.
+- K-means regimes are statistical clusters based on the 17 diagnostic variables; they are not predefined physical climate regions.
+
+---
+
+## Applications
+
+The workflow provides a framework for research involving:
+
+- satellite–reanalysis soil-moisture comparison
+- agricultural drought monitoring
+- hydroclimate variability
+- soil-moisture memory
+- spatial environmental diagnostics
+- GeoAI and machine learning
+- short-term soil-moisture prediction
+
+---
+
+## Author
+
+**Quazi Umme Rukiya**  
+Department of Earth, Environment and Sustainability Sciences  
+University of Iowa
+
+Research areas: **remote sensing, soil moisture, reanalysis data, agricultural drought, geospatial analysis, GeoAI, and machine learning.**
+
+---
+
+## License
+
+This project is available under the **MIT License**.
